@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>台北時間</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #2f2f2f;
+  --muted: #7a7a7a;
+  --accent: #c0392b;
+  color-scheme: light dark;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #191919;
+    --fg: #ececec;
+    --muted: #9b9b9b;
+    --accent: #ff7b6b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #191919;
+  --fg: #ececec;
+  --muted: #9b9b9b;
+  --accent: #ff7b6b;
+  color-scheme: dark;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Helvetica Neue", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+main { padding: 1rem; max-width: 100%; }
+.time {
+  font-size: clamp(2.5rem, 16vw, 7rem);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.sec { color: var(--accent); }
+.date {
+  margin-top: 0.9rem;
+  font-size: clamp(0.95rem, 4vw, 1.4rem);
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .colon { animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0.25; } }
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="time" role="timer" aria-label="目前時間">
+    <span id="h">--</span><span class="colon">:</span><span id="m">--</span><span class="colon">:</span><span id="s" class="sec">--</span>
+  </div>
+  <div class="date" id="date">載入中</div>
+</main>
+<script>
+(function () {
+  var TZ = "Asia/Taipei";
+  var timeFmt = new Intl.DateTimeFormat("en-GB", {
+    timeZone: TZ, hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit"
+  });
+  var dateFmt = new Intl.DateTimeFormat("zh-TW", {
+    timeZone: TZ, year: "numeric", month: "long", day: "numeric", weekday: "long"
+  });
+  var h = document.getElementById("h"),
+      m = document.getElementById("m"),
+      s = document.getElementById("s"),
+      d = document.getElementById("date");
+  var lastDate = "";
+
+  function tick() {
+    var now = new Date();
+    var parts = timeFmt.formatToParts(now);
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].type === "hour") h.textContent = parts[i].value === "24" ? "00" : parts[i].value;
+      if (parts[i].type === "minute") m.textContent = parts[i].value;
+      if (parts[i].type === "second") s.textContent = parts[i].value;
+    }
+    var ds = dateFmt.format(now);
+    if (ds !== lastDate) { d.textContent = ds; lastDate = ds; }
+    setTimeout(tick, 1000 - (now.getTime() % 1000));
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
